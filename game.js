@@ -321,7 +321,7 @@ async function showDestinationSelection() {
 
 // Initialize the map and pick a random starting airport
 function initializeMap() {
-    map = L.map('mapContainer').setView([60, 15], 4);
+    map = L.map('mapContainer').setView([60, 15], 3);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
@@ -334,7 +334,7 @@ function initializeMap() {
     gameState.location = startAirport.ident;
 
     updateMapMarkers();
-    appendMessage(`🚀 Starting at ${startAirport.name} (${startAirport.ident})`);
+    appendMessage(` Starting at ${startAirport.name} (${startAirport.ident})`);
 }
 
 // Update all markers (red = current airport, blue = others)
@@ -358,7 +358,7 @@ function updateMapMarkers() {
 
         const marker = L.marker([airport.lat, airport.lon], { icon: markerIcon }).addTo(map);
         marker.bindPopup(`${airport.name} (${airport.ident})`);
-        marker.on('click', () => selectAirport(airport)); // <-- click handler
+        marker.on('click', () => selectAirport(airport)); 
         airportMarkers.push(marker);
     });
 }
@@ -369,7 +369,7 @@ function selectAirport(airport) {
     flyToAirport(airport, distance);
 }
 
-// Simple distance calculation (Euclidean, can replace with Haversine)
+// Simple distance calculation
 function getDistance(from, to) {
     const dx = from.lat - to.lat;
     const dy = from.lon - to.lon;
@@ -400,6 +400,7 @@ async function flyToAirport(airport, distance) {
 
     gameState.score += scoreChange;
     gameState.money += moneyChange;
+    gameState.player_range-= distance;
 
     gameState.history.push({
         destination: airport.name,
@@ -413,9 +414,11 @@ async function flyToAirport(airport, distance) {
     });
 
     await appendMessage(` Flew to ${airport.name}.`);
+    appendMessage('Distance travelled: ' + distance + ' km');
     appendMessage(`Bird encountered: ${birdsFound[0].name}`);
     appendMessage(`${birdsFound[0].description}`)
     appendMessage(`Score +${scoreChange}, Money +${moneyChange.toFixed(2)} €`);
+    appendMessage(`Range remaining: ${gameState.player_range} km`);
     updatePlayerResources();
 }
 
