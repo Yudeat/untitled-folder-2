@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Hunter Simulation - Range Only</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="game.css">
+  
+</head>
+<body>
+    
+    <ul class="sidebar">
+        <li id="achievement-item" onclick="handleAction('0')"><img src="main/achivement.png" alt="Achievements (Score)"></li>
+        
+        <li id="airports-item" onclick="handleAction('2')"><img src="main/airports.png" alt="Airports Map (Fly)"></li>
+        
+        <li id="buy-item" onclick="handleAction('1')"><img src="main/buy.png" alt="Marketplace/Shop (Buy Range)"></li>
+        
+        <li id="history-item" onclick="handleAction('3')"><img src="main/history.png" alt="History/Log (Resources)"></li>
+                
+        <li id="you-item" onclick="handleAction('0')"><img src="main/you.png" alt="Player Profile (Range)"></li>
+        
+        <li id="help-item" onclick="startTour()"><span class="help-icon">?</span></li>
+    </ul>
+
+    <section>
+        <h1>Tervetuloa, </h1>
+        
+        <div id="mapContainer"></div>
+
+        <div id="game-output">
+            </div>
+        
+        <div id="game-input-container" class="game-input-container">
+        </div>
+
+    </section>
+
+    <div class="tour-overlay" id="tour-overlay"></div>
+
+    <div id="resultModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="modalBody"></div>
+            <p style="margin-top: 20px;">
+                <button onclick="closeModal()">Continue</button>
+            </p>
+        </div>
+    </div>
+<script src="game.js" defer></script>
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>

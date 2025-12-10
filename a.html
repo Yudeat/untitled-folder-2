@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clay Owl Intro</title>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-image: url("map.jpg");
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+        }
+
+     
+        #white-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(63, 103, 62, 0.78);
+            z-index: 1;
+        }
+
+    
+        #dialogue-area,
+        #game-start-modal {
+            position: absolute;
+            z-index: 10;
+        }
+
+        #dialogue-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+       
+        .owl-wrapper {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+      
+        #owl {
+            width: 240px;
+            height: auto;
+            animation: float 3s ease-in-out infinite,
+                       wiggle 5s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+      
+        #owl-blink {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 160px;
+            height: 160px;
+            background: url('owl-blink.png') center/cover no-repeat;
+            animation: blink 5s infinite;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Gentle wiggle */
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(1.5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-1.5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Blinking animation */
+        @keyframes blink {
+            0%, 96%, 100% { opacity: 0; }
+            97%, 99% { opacity: 1; }
+        }
+
+        /* Bounce animation when talking */
+        @keyframes bounceTalk {
+            0%   { transform: translateY(0); }
+            30%  { transform: translateY(-15px); }
+            60%  { transform: translateY(2px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Dialogue bubble */
+        #dialogue-bubble {
+            background: white;
+            padding: 18px 24px;
+            border-radius: 14px;
+            box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
+            max-width: 370px;
+            font-size: 17px;
+        }
+
+        #click-prompt {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #888;
+            display: none;
+            text-align: right;
+        }
+
+        /* Modal */
+        #game-start-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal-content {
+            background: white;
+            padding: 25px 35px;
+            border-radius: 12px;
+            max-width: 380px;
+            text-align: center;
+            font-size: 18px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #start-button {
+            margin-top: 18px;
+            padding: 12px 24px;
+            font-size: 17px;
+            border: none;
+            background: #f9a825;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- White overlay -->
+    <div id="white-overlay"></div>
+
+    <div id="dialogue-area">
+        <div class="owl-wrapper">
+            <img id="owl" alt="oel" src="owl.png">
+            <div id="owl-blink"></div>
+        </div>
+
+        <div id="dialogue-bubble">
+            <div id="dialogue-text"></div>
+            <div id="click-prompt">Tap to continue…</div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="game-start-modal">
+        <div id="modal-content">
+            <p id="modal-text"></p>
+            <button id="start-button">Start Game</button>
+        </div>
+    </div>
+
+
+<script>
+    // Load name stored from index.html
+    const playerName = localStorage.getItem("playerName") || "Chief";
+
+    const dialogueTextElement = document.getElementById('dialogue-text');
+    const clickPrompt = document.getElementById('click-prompt');
+    const dialogueArea = document.getElementById('dialogue-area');
+    const gameStartModal = document.getElementById('game-start-modal');
+    const startButton = document.getElementById('start-button');
+    const modalText = document.getElementById('modal-text');
+    const owl = document.getElementById("owl");
+
+    modalText.innerHTML = `You have learned the basics, ${playerName}. Your plane  awaits you ,Hurry up and fly!`;
+
+    const dialogueLines = [
+    `Hey there, ${playerName}! 🐦 Ready to save some rare birds (and maybe your sanity)?`,
+    "I'm the Wise Clay Owl, your slightly sarcastic guide to birdy adventures.",
+    "Here's the lowdown on your epic mission:",
+    "✈️ Travel between airports to find rare birds (no, you can't fly them yourself!).",
+    "🦅 Hunt birds to gain score and money (try not to get eaten).",
+    "⛽ Manage your range and money wisely, or you'll be hitchhiking in the clouds.",
+    "🛒 Buy equipment to increase your range and fuel (shopping spree, bird style!).",
+    "🎁 Keep your eyes peeled for loot boxes – surprise rewards await!",
+    "🏆 Reach 5000 points to win the game and earn eternal bragging rights!",
+    "Now, strap in, check your gear, and let's make these birds famous!"
+];
+
+    let currentLineIndex = 0;
+    let isTyping = false;
+    let typingTimeout = null;
+
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    function moveOwlRandomly() {
+        const maxLeft = window.innerWidth - dialogueArea.offsetWidth - 50;
+        const maxTop = window.innerHeight - dialogueArea.offsetHeight - 50;
+        
+        const randomLeft = getRandomInt(50, maxLeft);
+        const randomTop = getRandomInt(50, maxTop);
+
+        dialogueArea.style.left = `${randomLeft}px`;
+        dialogueArea.style.top = `${randomTop}px`;
+    }
+
+    // Owl follows cursor
+    document.addEventListener("mousemove", (e) => {
+        const x = e.clientX / window.innerWidth - 0.5;
+        owl.style.transform = `translateY(0px) rotate(${x * 8}deg)`;
+    });
+
+
+    function typeWriter(text) {
+        let i = 0;
+        isTyping = true;
+
+        dialogueTextElement.innerHTML = '';
+        clickPrompt.style.display = 'none';
+
+        // Owl bounce animation when speaking
+        owl.style.animation = "bounceTalk 0.6s ease, float 3s ease-in-out infinite, wiggle 5s ease-in-out infinite";
+
+        const speed = 45;
+
+        function type() {
+            if (i < text.length) {
+                dialogueTextElement.innerHTML += text.charAt(i);
+                i++;
+                typingTimeout = setTimeout(type, speed);
+            } else {
+                isTyping = false;
+                owl.style.animation = "float 3s ease-in-out infinite, wiggle 5s ease-in-out infinite";
+
+                if (currentLineIndex < dialogueLines.length) {
+                    clickPrompt.style.display = 'block';
+                }
+            }
+        }
+        type();
+    }
+
+
+    function advanceDialogue() {
+        if (isTyping) {
+            clearTimeout(typingTimeout);
+            dialogueTextElement.innerHTML = dialogueLines[currentLineIndex - 1];
+            isTyping = false;
+            clickPrompt.style.display = 'block';
+            return;
+        }
+
+        if (currentLineIndex < dialogueLines.length) {
+            moveOwlRandomly();
+            typeWriter(dialogueLines[currentLineIndex]);
+            currentLineIndex++;
+        } else {
+            document.getElementById('dialogue-area').style.display = 'none';
+            document.body.removeEventListener('click', advanceDialogue);
+            gameStartModal.style.display = 'flex';
+            document.body.style.cursor = 'default';
+        }
+    }
+
+
+    startButton.addEventListener('click', () => {
+        window.location.href = '/game.html';
+    });
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.addEventListener('click', advanceDialogue);
+        moveOwlRandomly();
+        advanceDialogue();
+    });
+
+    window.addEventListener('resize', () => {
+        if (currentLineIndex < dialogueLines.length) {
+            moveOwlRandomly();
+        }
+    });
+</script>
+
+</body>
+</html>
